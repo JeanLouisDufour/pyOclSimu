@@ -29,6 +29,21 @@ def lex_type_lookup_func(name):
 	is_type = is_type_in_scope(name)
 	return is_type
 
+############# from c_parser.py 
+
+def _add_typedef_name(name, coord):
+	""" Add a new typedef name (ie a TYPEID) to the current scope
+	"""
+	if not scope_stack[-1].get(name, True):
+		assert False, (
+			"Typedef %r previously declared as non-typedef "
+			"in this scope" % name, coord)
+	scope_stack[-1][name] = True
+
+#_add_typedef_name('uchar', None)
+
+#############
+
 clex = CLexer(
             error_func=lex_error_func,
             on_lbrace_func=lex_on_lbrace_func,
@@ -49,3 +64,15 @@ l.input('hello/*foo*/12.0 world//bar')
 tl = list(l) # un Lexer est iterable
 tyl = [i.type for i in tl]
 assert tyl == ['ID', 'FLOAT_CONST', 'ID'], tyl
+
+s = 'toto __local uchar titi'
+l.input(s)
+tl = list(l)
+print(s,tl)
+
+fn = r'c:/opencv-4.5.1/sources/modules/imgproc/src/opencl/clahe.cl'
+fd = open(fn)
+s = fd.read()
+fd.close()
+l.input(s)
+tl = list(l)

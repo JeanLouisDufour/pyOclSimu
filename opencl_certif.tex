@@ -1,0 +1,140 @@
+\documentclass[a4paper,10pt]{article} % use larger type; default would be 10pt
+
+\usepackage[a4paper,left=2cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
+
+\bibliographystyle{plainurl}
+
+%\input{../cours_thermo/lib_jld.tex}
+%\graphicspath{{./images/}}
+\usepackage{hyperref}
+
+%%% The "real" document content comes below...
+
+\title{A certification-oriented OpenCL subset}
+\author{Jean-Louis Dufour}
+%\date{} % Activate to display a given date or no date (if empty),
+         % otherwise the current date is printed 
+\date{Safran Electronics \& Defense\\
+\today
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Manycores are emerging in embedded systems, but only in non-critical usages.
+Indeed, the correctness justifications required by a certification process are completely beyond the reach of industrial practice,
+and at the frontier of the academic state of the Art.
+We focus on a subset of the problem, the correctness of the parallel algorithm.
+We emphasize that it has nothing to do with the corresponding problem on multicores,
+and propose a justification strategy based on a subset of the OpenCL language.
+\\\\
+\textbf{Keywords:}\ Manycore, OpenCL, data race, barrier divergence
+\end{abstract}
+
+
+
+\section{Introduction}
+
+Manycores (i.e. mainly GPUs programmed in CUDA or OpenCL) are emerging in embedded systems, but only in non-critical usages.
+Indeed, the correctness justifications required by a certification process are completely beyond the reach of industrial practice,
+and at the frontier of the academic state of the Art.
+The problem can be decomposed as follows:
+\begin{description}
+\item[Hardware] is a complex black box, where critical mechanisms like the network-on-chip linking cores to memory banks must be guessed from the patents  \cite{aamodt2018general}; certification-friendly suppliers are a rare exception \cite{boyer2018computing}.
+\item[Software / Compiler-and-Scheduler] is also a complex black box, with very few justifications of the compliance w.r.t. the CUDA or OpenCL specification (beyond passing the OpenCL conformance test suite),
+\item[Software / Application] (a.k.a. \emph{(compute) kernel}) consists of tens, hundreds or thousands of lightweight threads sharing two levels of memory ('local' and 'global' in OpenCL). This kind of software is the favorite playground of \emph{heisenbugs}, hence test-based methodologies are notoriously ineffective, whether to debug or to verify.
+\end{description}
+These three aspects are equally important, but the first two are more 'industrial' than technical, because of the competitive nature of the main market of GPUs : video games. We focus here on the third aspect, which is essentially technical, but has also an industrial facet.
+
+Our proposal can be summed up very simply :
+\begin{enumerate}
+\item we demonstrate that the kernel is \emph{deterministic} : it performs betwen inputs and outputs a transfer \emph{function} and not a transfer \emph{relation}. The only way to do this is to do it \emph{formally}, but it doesn't require the mastery of a formal language: only simple assertions, automatically checkable by an SMT-solver.
+\item we then demonstrate that the (parallel) kernel has an equivalent sequential version : it can be done by test.
+\item finally, it only remains to validate the sequential version functionally: business as usual (by test).
+\end{enumerate}
+Heisenbugs are detected by the first step, and after only 'standard' bugs remain.
+A formal method is mandatory only for this first step, which will be illustrated on a representative 'real-life' kernel:  the OpenCV histogram equalization function 'equalizeHist'.
+This raises a surprising but interesting question: will many-core be the Trojan horse of formal methods for developing critical software ?
+
+\section{Multicores and manycores pose different certification problems}
+
+Multicores and manycores look the same from an hardware point of view : cores sharing memories.
+Therefore both undergo the same problems w.r.t. critical applications:
+\begin{itemize}
+\item
+variability in access times to shared memory, which induces variability in execution times.
+\item
+race conditions: \cite{padua2011encyclopedia}
+\begin{quotation}
+when two or more threads access a common resource,
+e.g., a variable in shared memory, and the order of the
+accesses depends on the timing, i.e., the progress of
+individual threads
+\end{quotation}
+
+\end{itemize}
+
+For multicores this is significant, even with long pipelines and out-of-order execution. But with only slight exaggeration, this is their only problem with regard to certification.
+
+For manycores, this variability is probably not as important, because the architecture is completely 'data-oriented'.
+But let's say it is: it's still not the most feared phenomenon.
+The problem comes from the particular kind of supported algorithm, which induces a particular kind of sharing between threads :
+\begin{itemize}
+\item on a multicore, in an embedded use, the design aims to safely assess this variability, for example with a synchronous approach.
+In this case, each task has exclusivity on its own data, and data exchanged between tasks are carefully read and written at the start and end of the tasks, in such a way to avoid simultaneous accesses.
+In other words the few data sharing which occurs is under time-control, and there is mainly a non-functional bus/memory sharing.
+In brief, tasks share mainly organs, and there is absolutely no difficulty in obtaining a deterministic functional behavior.
+\item on a manycore, hundreds of threads read and write simultaneously the same data arrays. Threads share not only organs, but also data. This leads to the famous \emph{data races}, where a thread reads a data which is updated simultaneously by another thread. This leads to non-determinism, which is usually a show-stopper for certification.
+\end{itemize}
+
+We will focus on OpenCL \cite{munshi2011opencl}.
+
+
+\section{The OpenCL subset}
+
+
+synchronization : host and device (wi, kernel)
+work-item synchronization is not necessary in case of embarassingly parallel
+applies only to work-items in the same work-group
+
+\section{Issues and discussion}
+
+bla
+
+bla
+
+skeletons : \cite{cole2004bringing}, \cite{steuwer2011skelc}
+
+\cite{betts2012gpuverify}
+
+Early GPUs were primarily tailored toward \emph{embarrassingly parallel} graphics workloads :
+computing independently each of the pixels that constitute the display, hence a low degree of data sharing.
+
+\section{Related works}
+
+bla
+
+Two common ways to do so are sequential consistency
+\cite{lamport1979make} and linearizability \cite{herlihy1990linearizability}. Both require that
+the values returned by the operations appear to have
+been returned by a sequential execution of the same
+operations; sequential consistency only requires this
+order to be consistent with the order in which each
+individual thread invokes the operations, while linearizability
+further requires this order to be consistent
+with the real-time order of nonoverlapping operations.
+
+bla
+
+\section{Conclusions}
+
+bla
+
+bla
+
+bla
+
+\bibliography{opencl_certif}
+
+\end{document}

@@ -12,6 +12,9 @@ import sys
 from ply import lex
 from ply.lex import TOKEN
 
+_ocl_typedefs = {'bool','float2','float4','float8','float16','half','image2d_t','int2','int4','sampler_t',
+				 'short','short4',
+				 'uchar','uchar2','uchar3','uchar4','uchar8','uchar16','uint','uint4','ushort','ushort16'} # JLD
 
 class CLexer(object):
     """ A lexer for the C language. After building it, set the
@@ -109,7 +112,7 @@ class CLexer(object):
         'VOLATILE', 'WHILE', '__INT128',
     )
     if True: # OpenCL
-        keywords += ('__GLOBAL','__KERNEL','__LOCAL') 
+        keywords += ('__CONST','__CONSTANT','__GLOBAL','GLOBAL','KERNEL','__KERNEL','__LOCAL','__PRIVATE','READ_ONLY','__READ_ONLY','WRITE_ONLY','__WRITE_ONLY') 
 
     keyword_map = {}
     for keyword in keywords:
@@ -507,7 +510,7 @@ class CLexer(object):
     @TOKEN(identifier)
     def t_ID(self, t):
         t.type = self.keyword_map.get(t.value, "ID")
-        if t.type == 'ID' and self.type_lookup_func(t.value):
+        if t.type == 'ID' and (self.type_lookup_func(t.value) or t.value in _ocl_typedefs): # JLD
             t.type = "TYPEID"
         return t
 

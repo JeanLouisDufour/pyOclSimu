@@ -15,7 +15,6 @@ from c_lexer import CLexer
 from plyparser import PLYParser, Coord, ParseError, parameterized, template
 from ast_transforms import fix_switch_cases
 
-
 @template
 class CParser(PLYParser):
     def __init__(
@@ -845,10 +844,22 @@ class CParser(PLYParser):
         """
         p[0] = p[1]
 
-    def p_type_qualifier(self, p):
+    def p_type_qualifier(self, p): # JLD
         """ type_qualifier  : CONST
                             | RESTRICT
                             | VOLATILE
+							| __CONST
+							| __CONSTANT
+							| GLOBAL
+							| __GLOBAL
+							| KERNEL
+							| __KERNEL
+							| __LOCAL
+							| __PRIVATE
+							| READ_ONLY
+							| __READ_ONLY
+							| WRITE_ONLY
+							| __WRITE_ONLY
         """
         p[0] = p[1]
 

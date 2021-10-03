@@ -30,6 +30,7 @@ def preprocess_file(filename, cpp_path='cpp', cpp_args=''):
         Errors from cpp will be printed out.
     """
     path_list = [cpp_path]
+    #path_list += ['-x','c'] # JLD
     if isinstance(cpp_args, list):
         path_list += cpp_args
     elif cpp_args != '':
@@ -86,5 +87,9 @@ def parse_file(filename, use_cpp=False, cpp_path='cpp', cpp_args='',
             text = f.read()
 
     if parser is None:
-        parser = CParser()
+        parser = CParser( # JLD
+				lex_optimize=False,
+                yacc_debug=True,
+                yacc_optimize=False,
+                yacctab='yacctab')
     return parser.parse(text, filename)
