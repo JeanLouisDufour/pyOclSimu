@@ -56,7 +56,7 @@ Our proposal can be simply summed up :
 Due to the astronomical number of possible interleavings between the threads (the 'work-items' in OpenCL), the only way to do this is to do it \emph{formally}.
 The state of the Art doesn't allow to automate this in the general case, but we claim here that a special case can be defined, whose semi-automation is \emph{industrially} achievable.
 This 'industrial/human' aspect is a key point, and relates both to the engineers but also to the certifiers:
-the mastery of a formal language is not needed, only simple annotations are written. It is the subject of this paper.
+the mastery of a formal language is not needed, and as often as possible, only simple annotations are to be written. It is the subject of this paper.
 \item we then demonstrate that the (parallel) kernel has an equivalent sequential version : thanks to the previous property, it can convincingly be done by test. This is not covered by this paper.
 \item finally, it only remains to validate the sequential version functionally: business as usual (and usually by test); again not covered by this paper.
 \end{enumerate}
@@ -191,7 +191,7 @@ The subset is very restrictive, that's why we are testing it on the OpenCV kerne
 
 The two kinds of proof obligations differ in terms of complexity:
 \begin{itemize}
-\item the disjointness needs few context and is an easy task for any SMT-solver.
+\item the disjointness needs few context and is within the reach of the best SMT-solvers. Of course, in absolute terms the problem is undecidable, that's why a 5th optional restriction is that this proof obligation belongs to Presburger arithmetic.
 \item the correctness needs more context and, as its name implies, is in fact the typical proof obligation associated with an assertion in a Hoare-logic framework like Frama-C.
 It is a bit harder than proving indexing correctness (alluded to in the introduction), because the subset of indexes is strictly smaller than the full range of the array.
 In particular, if the access is located after a loop, a loop invariant may be necessary.
