@@ -8,7 +8,7 @@
 # Eli Bendersky [https://eli.thegreenplace.net/]
 # License: BSD
 #-------------------------------------------------------------------------------
-import sys, traceback
+import json, sys, traceback
 
 # This is not required if you've installed pycparser into
 # your site-packages/ with setup.py
@@ -72,7 +72,10 @@ ocv_k_l = [
  	"dnn/src/opencl/col2im.cl -DT=int"
 		"         -DKERNEL_H=2 -DKERNEL_W=2 -DPAD_H=3 -DPAD_W=3 -DSTRIDE_H=7 -DSTRIDE_W=7",
  	"dnn/src/opencl/concat.cl -DDtype=int",
- 	"dnn/src/opencl/conv_layer_spatial.cl",
+ 	"dnn/src/opencl/conv_layer_spatial.cl -DKERNEL_BASIC -DDtype=int -DZPAR=4"
+ 		 " -DSTRIDE_X=2 -DSTRIDE_Y=3 -DKERNEL_HEIGHT=3 -DKERNEL_WIDTH=3"
+ 		 " -DDILATION_X=2 -DDILATION_Y=2"
+ 		 " -DCHANNELS=1 -DOUTPUT_Z=5",
  	"dnn/src/opencl/conv_spatial_helper.cl -DDtype=int",
  	"dnn/src/opencl/detection_output.cl",
  	"dnn/src/opencl/dummy.cl",
@@ -85,7 +88,9 @@ ocv_k_l = [
  	"dnn/src/opencl/matvec_mul.cl -DDtype=float -DDtype4=float4        -Dconvert_Dtype=convert_float",
  	"dnn/src/opencl/mvn.cl -DNUM=1 -DKERNEL_MVN",
  	"dnn/src/opencl/ocl4dnn_lrn.cl -DDtype=float",
- 	"dnn/src/opencl/ocl4dnn_pooling.cl",
+ 	"dnn/src/opencl/ocl4dnn_pooling.cl -DDtype=float -DKERNEL_MAX_POOL"
+ 		 " -DSTRIDE_H=2 -DSTRIDE_W=3 -DPAD_T=1 -DPAD_L=1"
+ 		 " -DKERNEL_H=5 -DKERNEL_W=5",
  	"dnn/src/opencl/permute.cl -DDtype=int",
  	"dnn/src/opencl/pooling.cl -DT=float",
  	"dnn/src/opencl/prior_box.cl -DDtype=float -DDtype4=float4      -Dconvert_T=convert_float4",
@@ -110,7 +115,15 @@ ocv_k_l = [
  	"imgproc/src/opencl/boxFilter3x3.cl",
  	"imgproc/src/opencl/calc_back_project.cl -Dhistdims=1"
  		 " -Dscn=1",
-   	"imgproc/src/opencl/canny.cl",
+   	"imgproc/src/opencl/canny.cl -D_1_ -DWITH_SOBEL"
+	   " -Dcn=1 -DGRP_SIZEX=1 -DGRP_SIZEY=3"
+	   " -DfloatN=float -Dconvert_floatN=convert_float -DTYPE=int",
+    "imgproc/src/opencl/canny.cl -D_1_ -DWITHOUT_SOBEL"
+		" -Dcn=1 -DGRP_SIZEX=1 -DGRP_SIZEY=3",   
+    "imgproc/src/opencl/canny.cl -D_1_ -DSTAGE2"
+		" -DLOCAL_X=2 -DLOCAL_Y=3 -DPIX_PER_WI=4",
+    "imgproc/src/opencl/canny.cl -D_1_ -DGET_EDGES"
+		 " -DPIX_PER_WI=4",
  	"imgproc/src/opencl/clahe.cl",
 	 "imgproc/src/opencl/color_hsv.cl"
   	 	 " -DPIX_PER_WI_Y=2 -Dscn=3 -Ddcn=3 -Dbidx=0x2 -Ddepth=0",
@@ -167,10 +180,15 @@ ocv_k_l = [
  		 " -DKERNEL_MATRIX_X=DIG(3.14)DIG(2.78)1.7"
  		 " -DKERNEL_MATRIX_Y=DIG(3.14)DIG(2.78)1.7"
  		 " -DBORDER_CONSTANT",
- 	"imgproc/src/opencl/gftt.cl",
+ 	"imgproc/src/opencl/gftt.cl -D_1_ -DOP_MAX_EIGEN_VAL -DWGS2_ALIGNED=16 -Dgroupnum=8 -DWGS=4",
+	"imgproc/src/opencl/gftt.cl -D_1_ -DOP_FIND_CORNERS ",
  	"imgproc/src/opencl/histogram.cl"
  		 " -DBINS=256 -DHISTS_COUNT=16 -DWGS=1",
- 	"imgproc/src/opencl/hough_lines.cl",
+ 	"imgproc/src/opencl/hough_lines.cl -D_1_ -DMAKE_POINTS_LIST -DLOCAL_SIZE=16 -DGROUP_SIZE=16",
+ 	"imgproc/src/opencl/hough_lines.cl -D_1_ -DFILL_ACCUM_GLOBAL",
+ 	"imgproc/src/opencl/hough_lines.cl -D_1_ -DFILL_ACCUM_LOCAL -DBUFFER_SIZE=16 -DLOCAL_SIZE=16",
+ 	"imgproc/src/opencl/hough_lines.cl -D_1_ -DGET_LINES",
+ 	"imgproc/src/opencl/hough_lines.cl -D_1_ -DGET_LINES_PROBABOLISTIC",
  	"imgproc/src/opencl/integral_sum.cl -DsumT=int",
  	"imgproc/src/opencl/laplacian3.cl"
  		 " -DKERNEL_MATRIX=DIG(3.14)DIG(2.78)1.7",
@@ -180,8 +198,10 @@ ocv_k_l = [
  		 " -DBLK_X=2 -DBLK_Y=3"
  		 " -DRADIUS=2"
  		 " -DconvertToWT=convert_float -DconvertToDT=convert_int",
- 	"imgproc/src/opencl/linearPolar.cl",
- 	"imgproc/src/opencl/logPolar.cl",
+ 	"imgproc/src/opencl/linearPolar.cl -D_1_ -DForwardMap -DMEM_SIZE=256",
+ 	"imgproc/src/opencl/linearPolar.cl -D_1_ -DInverseMap",
+ 	"imgproc/src/opencl/logPolar.cl -D_1_ -DForwardMap -DMEM_SIZE=256",
+ 	"imgproc/src/opencl/logPolar.cl -D_1_ -DInverseMap",
  	"imgproc/src/opencl/match_template.cl -Dcn=1 -DWT=int",
  	"imgproc/src/opencl/medianFilter.cl -Dcn=1 -DT=int",
  	"imgproc/src/opencl/moments.cl -DTILE_SIZE=32",
@@ -195,7 +215,11 @@ ocv_k_l = [
  	"imgproc/src/opencl/pyr_up.cl -DFT=float -DT=float"
 		" -DconvertToFT=convert_float -DconvertToT=convert_float -DLOCAL_SIZE=2",
  	"imgproc/src/opencl/pyramid_up.cl",
- 	"imgproc/src/opencl/remap.cl -DBORDER_CONSTANT",
+ 	"imgproc/src/opencl/remap.cl -DBORDER_CONSTANT -DINTER_LINEAR"
+		 " -DST=int -DWT=float -DconvertToWT=convert_float"
+		 " -DT=float -DconvertToT=convert_float"
+		 " -DrowsPerWI=16"
+		 " -DWT2=ushort2 -DconvertToWT2=convert_ushort2",
  	"imgproc/src/opencl/resize.cl -DINTER_NEAREST -Ddepth=0 -Dcn=1"
  		 " -DWT=float -DconvertToWT=convert_float -DT=float -DconvertToDT=convert_float"
  		 " -DINTER_RESIZE_COEF_BITS=8",
@@ -205,7 +229,7 @@ ocv_k_l = [
  	"imgproc/src/opencl/threshold.cl -DT1=int -DT=int -DSTRIDE_SIZE=2",
  	"imgproc/src/opencl/warp_affine.cl -DINTER_NEAREST"
 		" -DT=float -DCT=float -DrowsPerWI=2",
-	"imgproc/src/opencl/warp_perspective.cl  -DINTER_NEAREST"
+ 	"imgproc/src/opencl/warp_perspective.cl  -DINTER_NEAREST"
 		" -DT=float -DCT=float",
 	"imgproc/src/opencl/warp_transform.cl -DST=int",
 	
@@ -222,8 +246,10 @@ clang_options = '-cl-std=CL2.0 -Xclang'.split()
 # recopie (avec ...base...) dans le dossier courant
 clang_options += '-ast-dump=json -fsyntax-only'.split() # parse only
 
+ocl_js = []
 for s in ocv_k_l:
 	if s.startswith(('core__','dnn__')) or '/gemm_INH' in s: continue
+	#if 'hough_lines.cl' not in s: continue
 	print('*'*64)
 	print(s)
 	sp_idx = s.find(' ')
@@ -241,7 +267,11 @@ for s in ocv_k_l:
             cpp_args=['-E', r'-Iutils/fake_libc_include'] + ['-x','c','-D__attribute__(x)='] + cpp_args.split())
 		#	ast.show()
 	elif True:
-		js = cl_parse_clang.parse(filename, cpp_args)
+		js, stderr = cl_parse_clang.parse(filename, cpp_args)
+		js1 = [x for x in js if x[0] == 'FunctionDecl' and x[2] is not None]
+		if js1 == []:
+			assert False
+		ocl_js.append([filename, cpp_args, stderr, js])
 	else:
 		path_list = [clang_path] + clang_options + cpp_args.split() + [filename]
 		#path_list = ('clang -cl-std=CL2.0 -Xclang -ast-dump=json -fsyntax-only'
@@ -258,6 +288,9 @@ for s in ocv_k_l:
 				assert 'error:' not in p.stderr # and p.stdout == ''
 			else:
 				assert False, filename
+fd = open('c:/Temp/ocl_dump.json','w')
+json.dump(ocl_js, fd, indent='\t')
+fd.close()
 
 # clang -c -Xclang -finclude-default-header  -target spir64 -O0 -emit-llvm -o test.bc c:/opencv-4.5.1/sources/modules/imgproc/src/opencl/clahe.cl
 # https://webdevdesigner.com/q/how-to-use-clang-with-mingw-w64-headers-on-windows-18121/
