@@ -267,7 +267,7 @@ for s in ocv_k_l:
             cpp_args=['-E', r'-Iutils/fake_libc_include'] + ['-x','c','-D__attribute__(x)='] + cpp_args.split())
 		#	ast.show()
 	elif True:
-		js, stderr = cl_parse_clang.parse(filename, cpp_args)
+		js, stderr = cl_parse_clang.parse(filename, cpp_args, mode_fast=False)
 		js1 = [x for x in js if x[0] == 'FunctionDecl' and x[2] is not None]
 		if js1 == []:
 			assert False
@@ -288,9 +288,10 @@ for s in ocv_k_l:
 				assert 'error:' not in p.stderr # and p.stdout == ''
 			else:
 				assert False, filename
-fd = open('c:/Temp/ocl_dump.json','w')
-json.dump(ocl_js, fd, indent='\t')
-fd.close()
+if False:
+	fd = open('c:/Temp/ocl_dump.json','w')
+	json.dump(ocl_js, fd, indent='\t')
+	fd.close()
 
 # clang -c -Xclang -finclude-default-header  -target spir64 -O0 -emit-llvm -o test.bc c:/opencv-4.5.1/sources/modules/imgproc/src/opencl/clahe.cl
 # https://webdevdesigner.com/q/how-to-use-clang-with-mingw-w64-headers-on-windows-18121/

@@ -25,16 +25,22 @@ def parse_enum(f):
 	global rec2obj
 	assert f['kind'] == 'EnumDecl'
 	name = f.get('name')
-	inner = f.get('inner')
 	if name is None:
-		assert inner is not None, f
-		assert all(d['kind']=='EnumConstantDecl' for d in inner)
-		enum_names = [d['name'] for d in inner]
 		assert f['id'] not in rec2obj
 		rec2obj[f['id']] = f
 	else:
 		assert name not in rec2obj
 		rec2obj[name] = f
+	inner = f.get('inner')
+	if inner is None:
+		r = None
+	else:
+		r = []
+		for decl in inner:
+			assert decl['kind']=='EnumConstantDecl'
+			val = chk_expr(decl['inner'][0]) if 'inner' in decl else None
+			r.append([decl['name'], val])
+	return r
 
 def ty_rec_sz(d):
 	""
@@ -120,6 +126,7 @@ def parse_rec(e):
 	global rec2obj
 	assert e['kind'] == "RecordDecl"
 	assert e['tagUsed'] in ('struct','union'), e.get('tagUsed')
+	r = [e['tagUsed']]
 	name = e.get('name')
 	if name is None:
 		assert 'inner' in e, e
@@ -134,19 +141,24 @@ def parse_rec(e):
 		assert 'inner' not in e or (len(e['inner'])==1 and e['inner'][0]['kind']=='MaxFieldAlignmentAttr'), e
 	else:
 		for f in e['inner']:
-			if f['kind'] == 'EnumDecl':
-				parse_enum(f)
-			elif f['kind'] == 'FieldDecl':
+			fn = f.get('name')
+			fk = f['kind']
+			fr = [fk,fn]
+			if fk == 'EnumDecl':
+				fr.append(parse_enum(f))
+			elif fk == 'FieldDecl':
 				assert ('name' in f) == ('isImplicit' not in f), f
 				fty = f['type']
 				assert 'qualType' in fty and 'inner' not in fty, fty
-				_ = 2+2
-			elif f['kind'] == 'IndirectFieldDecl':
+				fr.append(fty['qualType'])
+			elif fk == 'IndirectFieldDecl':
 				assert f['isImplicit'] and 'name' in f and 'type' not in f, f
-			elif f['kind'] == 'RecordDecl':
-				parse_rec(f)
+			elif fk == 'RecordDecl':
+				fr.append(parse_rec(f))
 			else:
-				assert f['kind'] in ('AlignedAttr','MaxFieldAlignmentAttr','FullComment'), f
+				assert fk in ('AlignedAttr','MaxFieldAlignmentAttr','FullComment'), f
+			r.append(fr)
+	return r
 
 def is_expr(e):
 	""
@@ -238,10 +250,10 @@ def chk_expr(e, lvalue=False):
 		r = ['?:',C,X,Y]
 	elif ek == 'ConstantExpr':
 		[e1] = inner
-		if e1['kind'] not in ('IntegerLiteral',):
-			assert e1['kind'] == 'ImplicitCastExpr', e1
-			assert e1['castKind'] == 'IntegralCast', e1
-			assert e1['inner'][0]['kind'] == 'IntegerLiteral', e1
+		if e1['kind'] != 'IntegerLiteral':
+			if e1['kind'] == 'ImplicitCastExpr':
+				assert e1['castKind'] == 'IntegralCast', e1
+				assert e1['inner'][0]['kind'] == 'IntegerLiteral', e1
 		r.append(chk_expr(e1))
 	elif ek == 'CStyleCastExpr':
 		ck = e['castKind']
@@ -393,7 +405,7 @@ def chk_varDecl(x):
 	ty_id = ty.get('typeAliasDeclId')
 	if ty_id:
 		assert id2obj[ty_id]['kind'] == "TypedefDecl"
-	vt = ty.get('desugaredQualType',ty['qualType'])
+	vt = ty['qualType'] # ty.get('desugaredQualType',ty['qualType'])
 	vi = None
 	if 'inner' in x:
 		assert x.get('init') in ('c',None), x # None : canny.cl : __local float mag[...]
@@ -573,9 +585,7 @@ def chk_loc(e):
 		foo = loc 
 	return foo # {'line': foo.get('line'), 'col': foo.get('col')}
 
-mode_fast = True
-
-def parse(filename, cpp_args=""):
+def parse(filename, cpp_args="", mode_fast = True):
 	"""
 	"""
 	global id2obj, name2obj, rec2obj, td2obj
@@ -683,7 +693,7 @@ def parse(filename, cpp_args=""):
 		builtin = loc == {} or parsing_file.endswith(('opencl-c.h','opencl-c-base.h'))
 		file_ok = parsing_file.endswith(fname_c) # file_ok_end
 		assert builtin != file_ok
-		if builtin:
+		if mode_fast and builtin:
 			continue # DEBUG
 		if file_ok:
 			if 'includedFrom' in loc: ### jeu tordu d'inclusions (.h -> .c)
@@ -923,7 +933,7 @@ def parse(filename, cpp_args=""):
 					  'Record', 'Typedef','Vector'), tk
 			tqt = e['type']['qualType']
 			assert tqt == inner[0]['type']['qualType'] ## mais pas e['type'] == inner[0]['type'] ; e['type'] plus gros
-			decl_value = [tk]
+			decl_value = [tk, tqt]
 			if tk == 'AtomicType': #
 				i0tq = inner[0]['type']['qualType'] # '_Atomic(int)'
 				i0i0tq = inner[0]['inner'][0]['type']['qualType'] # 'int'
@@ -979,7 +989,7 @@ typedef struct {
 				assert not ctx_OpenCL
 			elif tk == 'PointerType': #
 				i0i0k = inner[0]['inner'][0]['kind']
-				assert i0i0k == 'BuiltinType', i0i0k
+				assert i0i0k in ('BuiltinType','QualType'), i0i0k
 			elif tk == 'QualType':
 				assert not ctx_OpenCL
 			elif tk == 'RecordType': #
@@ -1034,5 +1044,5 @@ if __name__ == "__main__":
 	elif idx == 1:
 		filename = "cl_parse_test1.cl"
 		cpp_args = ""
-	js, stderr = parse(filename, cpp_args)
+	js, stderr = parse(filename, cpp_args, mode_fast=False)
 	print(js[-1])

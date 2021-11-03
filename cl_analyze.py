@@ -88,7 +88,11 @@ def iter_in_stmt(stmt, p=[]):
 
 ##############################################
 
-list_of_decl = current_decl = None
+
+##############################################
+
+
+list_of_decl = current_decl = kernels = non_kernels = None
 
 def chk_atomics(decl):
 	""
@@ -248,6 +252,17 @@ if __name__ == "__main__":
 		fd.close()
 	for [filename, cpp_args, stderr, list_of_decl] in js:
 		print('***** ', filename, ' ********')
+		assert all(len(decl)==4 and '__constant' in decl[2][0] for decl in list_of_decl if \
+			 decl[0] == 'VarDecl')
+		global_constants = [decl[1] for decl in list_of_decl if \
+			decl[0] == 'VarDecl']
+		print('global constants : ', global_constants)
+		kernels = [decl[1] for decl in list_of_decl if \
+			 decl[0] == 'FunctionDecl' and 'OpenCLKernelAttr' in decl[2][3]]
+		print('kernels : ', kernels)
+		non_kernels = [decl[1] for decl in list_of_decl if \
+			 decl[0] == 'FunctionDecl' and 'OpenCLKernelAttr' not in decl[2][3]]
+		print('non kernels : ', non_kernels)
 		for decl in list_of_decl:
 			if decl[0] != 'FunctionDecl':
 				continue
