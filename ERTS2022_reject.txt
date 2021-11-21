@@ -1,0 +1,183 @@
+Dear Jean-Louis Dufour,
+
+We regret to inform you that the ERTS-2022 Programme Committee have not selected your submission:
+
+72: A certification-oriented OpenCL subset
+
+We received a high number of very promising submissions. Unfortunately, this is much more than what we can accommodate in the programme considering in particular the feedback from the participants of the last ERTS edition, asking for a conference featuring less parallel sessions and leaving more time for visiting the exhibition. As a consequence, the selection has been difficult and your abstract has not been selected to be part of the conference programme.
+
+Please find included the review reports related to your submission.
+
+We thank you very much for your interest and contribution to the Conference. We look forward to meeting you at the Conference in Toulouse on March 30th and 31st 2022.
+
+
+Best regards,
+Mohamed Kaâniche
+On behalf of the ERTS-2022
+Scientific Committee
+
+SUBMISSION: 72
+TITLE: A certification-oriented OpenCL subset
+
+
+----------------------- REVIEW 1 ---------------------
+SUBMISSION: 72
+TITLE: A certification-oriented OpenCL subset
+AUTHORS: Jean-Louis Dufour
+
+----------- Overall evaluation -----------
+SCORE: 1 (weak accept)
+----------- Reviewer's confidence -----------
+SCORE: 3 ((medium))
+----------- Relevance to ERTS -----------
+SCORE: 4 (good)
+----------- Originality/Novelty -----------
+SCORE: 4 (good)
+----------- Positioning wrt the state of the art -----------
+SCORE: 4 (good)
+----------- Quality of the presentation -----------
+SCORE: 2 (poor)
+----------- Technical soudness -----------
+SCORE: 4 (good)
+----------- Applicative domain -----------
+SCORE: 12 (Aeronautics and Aerospace)
+----------- Type -----------
+SCORE: 2 (Industrial)
+----------- Review -----------
+The paper abstract introduces a novel approach to tackle correctness of parallel code execution on modern many-cores, such as GPUs or Massively Parallel Processor Arrays, thanks to a simple formal proof, and applied to a subset of OpenCL language
+
+The paper highlights that this issue is out of reach of legacy test based approaches, and that the many-cores problem has nothing to do with the multi-cores one. While the former statement is commonly agreed, the latter is not so obvious considering execution of parallel tasks which is the main topic of the paper. Indeed Section 2, presenting the multi-core use case, seems a bit biased as ruling out a naive deployment of parallel tasks/threads, thanks to a parallel programming model such as OpenMP or OpenCL. This would as well lead to heavy data sharing and open the door to the lack of race conditions or deadlocks demonstration needs, at a smaller scale but still out of reach of basic test based approaches.
+
+The promising methodology is based on three main steps, only the first one being in the scope of the final paper:
+ 1. Demonstration of the kernel functional determinism property
+ 2. Demonstration that there exists an equivalent sequential version
+ 3. As a result of the previous steps a legacy test based verification approach can be applied to the sequential version
+
+The current abstract  lacks  explanation on how the demonstration is actually achieved, thanks to a semi-automated process claimed to be developers and certification reviewers friendly. This is indeed a very valuable point and a strong claim, but which is not elaborated on in the abstract. It can only be assumed it has been successfully applied and that the full process will be exposed in the final paper.
+
+The transition from step 2 to step 3 is not detailed either, how is the sequential version obtained ? How is the  functional floating point operations determinism addressed ?
+
+The overall approach relies on very restrictive requirements and it is not clear whether the selected representative OpenCL kernels are actually compliant, and to which extent the selected histEqualize function is deemed representative.
+----------- Ways of improvement for the shepherding process -----------
+- Give some hints on the achieved results, was the method successfully applied at least on the selected OpenCL kernels subset?
+
+- In the issues and discussion section, it is mentioned that an informal justification will be presented to demonstrate deterministic property, and that a more formal proof would be needed, while in the introduction a formal method was already clearly identified for this first step. It is understood that the formal method relies on the 'almost-embarrasingly-parallel' property, which itself is not formally proven, but only informally justified.  Clarifications would be welcome in the final paper to determine if such a formal proof is really needed.
+
+- Enrich the actual state of the art with additional references such as papers targeting OpenMP runtime usage in critical applications.
+
+- Introduction ends with an interesting question on introduction of formal methods in safety-critical software developments, but is it not already the current trend with DO-178C/DO-333 as an example? Please ensure that this point is detailed in the final paper.
+
+- The overall abstract readability would benefit from a bit less casual writing style.
+
+
+
+----------------------- REVIEW 2 ---------------------
+SUBMISSION: 72
+TITLE: A certification-oriented OpenCL subset
+AUTHORS: Jean-Louis Dufour
+
+----------- Overall evaluation -----------
+SCORE: 1 (weak accept)
+----------- Reviewer's confidence -----------
+SCORE: 4 ((high))
+----------- Relevance to ERTS -----------
+SCORE: 4 (good)
+----------- Originality/Novelty -----------
+SCORE: 4 (good)
+----------- Positioning wrt the state of the art -----------
+SCORE: 4 (good)
+----------- Quality of the presentation -----------
+SCORE: 4 (good)
+----------- Technical soudness -----------
+SCORE: 4 (good)
+----------- Applicative domain -----------
+SCORE: 2 (Information Technology and Telecommunications)
+----------- Type -----------
+SCORE: 1 (Academics)
+----------- Review -----------
+The subject is interesting but as the conclusion introduced this paper define a work plan for next few month ... I think that the idea is good but the subject need additional work before it will be presented
+----------- Ways of improvement for the shepherding process -----------
+we need to a technical description of what is done and how you will solve the 3 issues mentioned in same way as you compare to some work that inspire this work you need to have a discussion of what is improvement and do you achieve the complexity reduction
+
+
+
+----------------------- REVIEW 3 ---------------------
+SUBMISSION: 72
+TITLE: A certification-oriented OpenCL subset
+AUTHORS: Jean-Louis Dufour
+
+----------- Overall evaluation -----------
+SCORE: -1 (weak reject)
+----------- Reviewer's confidence -----------
+SCORE: 3 ((medium))
+----------- Relevance to ERTS -----------
+SCORE: 4 (good)
+----------- Originality/Novelty -----------
+SCORE: 4 (good)
+----------- Positioning wrt the state of the art -----------
+SCORE: 2 (poor)
+----------- Quality of the presentation -----------
+SCORE: 1 (very poor)
+----------- Technical soudness -----------
+SCORE: 2 (poor)
+----------- Applicative domain -----------
+SCORE: 12 (Aeronautics and Aerospace)
+----------- Type -----------
+SCORE: 2 (Industrial)
+----------- Review -----------
+The paper proposes a new method to tackle certification of manycores in safety critical systems. One part is to rely on the correctness of the parallel code in particular the absence of race coniditions and being deterministic.
+After explaining the strategy, author states that a subset of the openCL language will provide such a guarantees.
+In the final paper, we will have an illustration of the proposed methods on some functions of the OpenCV library.
+
+I am not convince by the argumentation given in this abstract which is quite confused. For example stating that "race conditions and non-determinism are not a problem for embedded multicoresrace conditions and non-determinism are not a problem for embedded multicores" shall be better explained.
+I do not understand why proposed restriction of OpenCL will help. This has to be better described
+
+At the end this will not solve black box issues that we have with GPUs (Manycores). I believe that restriction of the OpenCL langugage shall also rely on knowledge of HW mechanisms and not only be driven by reducing "heisenbugs".
+----------- Ways of improvement for the shepherding process -----------
+If paper is accepted :
+- Improve Part I and Part II. I was not able to get the demonstration.
+
+- Why multicore are so different from manycore when producing code. Develop ideas on an example that is code on one hand on a multicore and on another hand on a many core.
+
+- Discuss if openCL is the only way to reach this level? Possibility to certify this language subset?
+
+- Improve the state of the art and related works
+
+
+
+----------------------- REVIEW 4 ---------------------
+SUBMISSION: 72
+TITLE: A certification-oriented OpenCL subset
+AUTHORS: Jean-Louis Dufour
+
+----------- Overall evaluation -----------
+SCORE: -1 (weak reject)
+----------- Reviewer's confidence -----------
+SCORE: 4 ((high))
+----------- Relevance to ERTS -----------
+SCORE: 5 (excellent)
+----------- Originality/Novelty -----------
+SCORE: 4 (good)
+----------- Positioning wrt the state of the art -----------
+SCORE: 4 (good)
+----------- Quality of the presentation -----------
+SCORE: 2 (poor)
+----------- Technical soudness -----------
+SCORE: 2 (poor)
+----------- Applicative domain -----------
+SCORE: 10 (Cyber Physical Systems)
+----------- Type -----------
+SCORE: 2 (Industrial)
+----------- Review -----------
+The certification of embedded systems based on a manycore architecture remains an important and very relevant topic for ERTS.
+
+This paper proposes to address part of this problem by considering specifically software development of parallel computing applications for ManyCore target  based on the OpenCL framework.
+
+However, the paper presents very preliminary works and only provides some general considerations without justifications of the proposed approach neither a sufficient explanation of the methodology. In addition, the current drafting of the document is a bit confusing, its structure is not easy to follow and does not give enough assurance on the quality of the work and results that should be presented in the final document. Furthermore, the conclusion is a bit disappointing as it suggests that the proposed method has not yet been really developed...
+
+In conclusion, this paper addresses an important topic for the ERTS community, but seems to be at a very preliminary level. If the paper is accepted, the author will have to better structure his presentation, focus precisely on the contribution and justify the hypotheses and explain the validity domain of the method with respect to results obtained on a test case.
+----------- Ways of improvement for the shepherding process -----------
+- improve structure of the paper
+- focus more clearly on the contribution
+- justify the proposed approches
+- provide results on a test case
